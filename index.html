@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>朋友圈点赞模拟器</title>
+  <style>
+    :root {
+      --bg: #f5f6f7;
+      --card: #ffffff;
+      --text: #1f2329;
+      --sub: #6b7785;
+      --line: #e9edf2;
+      --green: #07c160;
+      --blue: #576b95;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+    }
+
+    .panel,
+    .preview {
+      background: var(--card);
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(31, 35, 41, 0.06);
+      padding: 16px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 22px;
+    }
+
+    .desc {
+      margin: 0 0 16px;
+      color: var(--sub);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .form-row {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--sub);
+    }
+
+    input,
+    textarea,
+    button {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: var(--green);
+      color: #fff;
+      font-weight: 600;
+      transition: opacity .2s;
+    }
+
+    button.secondary {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    button:hover { opacity: .92; }
+
+    .moments-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .post-head {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #d8dee9;
+      flex-shrink: 0;
+    }
+
+    .name {
+      font-size: 15px;
+      color: var(--blue);
+      font-weight: 600;
+    }
+
+    .time {
+      margin-top: 3px;
+      font-size: 12px;
+      color: var(--sub);
+    }
+
+    .content {
+      line-height: 1.7;
+      font-size: 15px;
+      margin: 0 0 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .likes {
+      background: #f0f2f5;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 13px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .heart {
+      color: #f86060;
+      font-size: 14px;
+      margin-top: 1px;
+    }
+
+    .likers {
+      color: var(--blue);
+      line-height: 1.6;
+    }
+
+    .liker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+      border-top: 1px dashed var(--line);
+      padding-top: 12px;
+    }
+
+    .liker-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .liker-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #d8dee9;
+    }
+
+    .liker-name {
+      font-size: 12px;
+      color: #3a4a67;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <section class="panel">
+    <h1>朋友圈点赞模拟器</h1>
+    <p class="desc">可自定义头像、文案、发布时间和点赞数量，系统会随机生成点赞人的昵称与头像。</p>
+
+    <div class="form-row">
+      <label for="posterName">发布者昵称</label>
+      <input id="posterName" type="text" value="小张" />
+    </div>
+
+    <div class="form-row">
+      <label for="posterAvatar">发布者头像（图片 URL，可选）</label>
+      <input id="posterAvatar" type="text" placeholder="https://example.com/avatar.jpg" />
+    </div>
+
+    <div class="form-row">
+      <label for="postContent">朋友圈文案</label>
+      <textarea id="postContent">今天终于下班了，周末快乐！🎉</textarea>
+    </div>
+
+    <div class="form-row">
+      <label for="postTime">发布时间</label>
+      <input id="postTime" type="datetime-local" />
+    </div>
+
+    <div class="form-row">
+      <label for="likeCount">点赞人数</label>
+      <input id="likeCount" type="number" min="0" max="200" value="18" />
+    </div>
+
+    <div class="btn-group">
+      <button id="generateBtn">生成假朋友圈</button>
+      <button id="rerollBtn" class="secondary">只刷新点赞名单</button>
+    </div>
+  </section>
+
+  <section class="preview">
+    <div class="moments-card">
+      <div class="post-head">
+        <img id="previewAvatar" class="avatar" alt="发布者头像" />
+        <div>
+          <div id="previewName" class="name"></div>
+          <div id="previewTime" class="time"></div>
+        </div>
+      </div>
+
+      <p id="previewContent" class="content"></p>
+
+      <div class="likes">
+        <div class="heart">❤</div>
+        <div id="likersText" class="likers"></div>
+      </div>
+
+      <div id="likerGrid" class="liker-grid"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const firstNames = [
+    "晨", "浩", "宇", "子", "若", "诗", "佳", "依", "泽", "沐", "欣", "林", "言", "思", "然", "可", "明", "嘉", "安", "南"
+  ];
+
+  const lastNames = [
+    "王", "李", "张", "刘", "陈", "杨", "赵", "黄", "周", "吴", "徐", "孙", "马", "朱", "胡", "郭", "何", "高", "罗", "郑"
+  ];
+
+  const suffixes = ["", "同学", "老师", "_", "呀", "✨", "·摄影", "的小号", "Pro", "喵"];
+
+  const posterNameInput = document.getElementById("posterName");
+  const posterAvatarInput = document.getElementById("posterAvatar");
+  const postContentInput = document.getElementById("postContent");
+  const postTimeInput = document.getElementById("postTime");
+  const likeCountInput = document.getElementById("likeCount");
+
+  const previewAvatar = document.getElementById("previewAvatar");
+  const previewName = document.getElementById("previewName");
+  const previewTime = document.getElementById("previewTime");
+  const previewContent = document.getElementById("previewContent");
+  const likersText = document.getElementById("likersText");
+  const likerGrid = document.getElementById("likerGrid");
+
+  const generateBtn = document.getElementById("generateBtn");
+  const rerollBtn = document.getElementById("rerollBtn");
+
+  function randomFrom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function createNickName() {
+    const base = `${randomFrom(lastNames)}${randomFrom(firstNames)}${randomFrom(firstNames)}`;
+    const suffix = randomFrom(suffixes);
+    return `${base}${suffix}`;
+  }
+
+  function randomColor(seed) {
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) {
+      h = seed.charCodeAt(i) + ((h << 5) - h);
+    }
+    return `hsl(${Math.abs(h) % 360}, 70%, 62%)`;
+  }
+
+  function makeAvatar(name, size = 80) {
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = randomColor(name);
+    ctx.fillRect(0, 0, size, size);
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.96)";
+    ctx.font = `${Math.floor(size * 0.45)}px sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(name.slice(0, 1), size / 2, size / 2 + 1);
+
+    return canvas.toDataURL("image/png");
+  }
+
+  function formatDateTime(inputValue) {
+    if (!inputValue) {
+      return "刚刚";
+    }
+    const d = new Date(inputValue);
+    if (Number.isNaN(d.getTime())) {
+      return "刚刚";
+    }
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const h = String(d.getHours()).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+    return `${y}-${m}-${day} ${h}:${min}`;
+  }
+
+  function uniqueRandomLikers(count) {
+    const set = new Set();
+    while (set.size < count) {
+      set.add(createNickName());
+      if (set.size > 300) break;
+    }
+    return [...set].slice(0, count).map((name) => ({
+      name,
+      avatar: makeAvatar(name, 80)
+    }));
+  }
+
+  function render(onlyRerollLikers = false) {
+    const posterName = posterNameInput.value.trim() || "匿名用户";
+    const posterAvatar = posterAvatarInput.value.trim();
+    const content = postContentInput.value.trim() || "[未填写文案]";
+    const postTime = formatDateTime(postTimeInput.value);
+    const likeCount = Math.max(0, Math.min(200, Number(likeCountInput.value) || 0));
+
+    previewName.textContent = posterName;
+    previewTime.textContent = postTime;
+    previewContent.textContent = content;
+
+    if (!onlyRerollLikers) {
+      previewAvatar.src = posterAvatar || makeAvatar(posterName, 88);
+    }
+
+    const likers = uniqueRandomLikers(likeCount);
+    likersText.textContent = likers.length ? likers.map((l) => l.name).join("，") : "还没有人点赞";
+
+    likerGrid.innerHTML = "";
+    const fragment = document.createDocumentFragment();
+    likers.forEach((liker) => {
+      const item = document.createElement("div");
+      item.className = "liker-item";
+      item.innerHTML = `
+        <img class="liker-avatar" src="${liker.avatar}" alt="${liker.name}" />
+        <span class="liker-name" title="${liker.name}">${liker.name}</span>
+      `;
+      fragment.appendChild(item);
+    });
+    likerGrid.appendChild(fragment);
+  }
+
+  function setDefaultDateTime() {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    postTimeInput.value = now.toISOString().slice(0, 16);
+  }
+
+  setDefaultDateTime();
+  render();
+
+  generateBtn.addEventListener("click", () => render(false));
+  rerollBtn.addEventListener("click", () => render(true));
+</script>
+</body>
+</html>
